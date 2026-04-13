@@ -55,7 +55,8 @@ function preload() {
   font = loadFont("assets/font.otf");
   buttonClickSound = loadSound("assets/click.mp3");
   homeMusic = loadSound("assets/homemusic.mp3");
-  gameMusic = loadSound("assets/gamemusic.mp3");
+  let songNum = floor(random(0, 6));
+  gameMusic = loadSound("assets/gamemusic" + songNum + ".mp3");
   endMusic = loadSound("assets/endmusic.mp3");
 }
 
