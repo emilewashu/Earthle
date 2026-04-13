@@ -119,7 +119,7 @@ function setup() {
 
 // ================== DRAW ==================
 function draw() {
-  background(9, 12, 53);
+  background(7, 12, 52);
 
   zoom = lerp(zoom, targetZoom, 0.04);
   panX = lerp(panX, targetPanX, 0.04);
@@ -645,7 +645,6 @@ function handleGuess() {
       targetPos[1],
       targetPos[0]
     );
-
     targetAngle = radians(angle);
   }
 
@@ -1077,13 +1076,15 @@ function getCountryWorldPos(name) {
   if (!feature) return [null, null];
 
   const points = getAllPoints(feature);
-  let sumX = 0,
-    sumY = 0;
-  for (const [x, y] of points) {
-    sumX += x / 2;
-    sumY += -y / 2;
+  let sumLon = 0,
+    sumLat = 0;
+
+  for (const [lon, lat] of points) {
+    sumLon += lon;
+    sumLat += lat;
   }
-  return [sumX / points.length, sumY / points.length];
+
+  return [sumLon / points.length, sumLat / points.length];
 }
 
 function windowResized() {
