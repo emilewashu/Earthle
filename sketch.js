@@ -990,7 +990,7 @@ function mouseReleased() {
 }
 
 function keyPressed() {
-  if (key === "r" || key === "R") {
+  if ((key === "r" || key === "R") && document.activeElement !== input.elt) {
     recenterView();
   }
 }
