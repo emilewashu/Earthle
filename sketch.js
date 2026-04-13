@@ -208,7 +208,6 @@ function mouseWheel(event) {
   targetPanY -= (my * (newZoom - targetZoom)) / targetZoom;
 
   targetZoom = newZoom;
-  console.log("Zoom:", targetZoom.toFixed(2));
   return false;
 }
 
@@ -290,6 +289,9 @@ function drawLegend() {
     fill(255);
     text(item.label, startX + boxSize + 25, y - 19);
   }
+
+  textSize(22);
+  text("Press r to reset view", startX + 190, startY - totalHeight + 240);
 }
 
 function drawCompass() {
@@ -385,12 +387,10 @@ function showStartMenu() {
 
   fill(255);
   textAlign(CENTER, CENTER);
-
-  textSize(70);
+  textSize(80);
   text("Earthle", width / 2, height / 2 - 150);
 
-  textSize(22);
-
+  textSize(28);
   let boxWidth = width * 0.7;
   let boxX = width / 2 - boxWidth / 2;
 
