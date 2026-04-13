@@ -574,11 +574,7 @@ function startGame() {
   homeMusic.stop();
   endMusic.stop();
 
-  if (gameMusic.isPlaying()) {
-    gameMusic.stop();
-  }
-  gameMusic.setLoop(true);
-  gameMusic.play();
+  playRandomGameMusic();
 }
 
 function calculateScore() {
@@ -620,6 +616,20 @@ function updateGuessDropdown() {
     return d1 - d2;
   });
   options.forEach((opt) => countrySelect.elt.appendChild(opt));
+}
+
+function playRandomGameMusic() {
+  let songNum = floor(random(0, 6));
+
+  gameMusic = loadSound("assets/gamemusic" + songNum + ".mp3", () => {
+    gameMusic.setLoop(false);
+
+    gameMusic.onended(() => {
+      playRandomGameMusic();
+    });
+
+    gameMusic.play();
+  });
 }
 
 function handleGuess() {
