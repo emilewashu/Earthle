@@ -151,6 +151,7 @@ function draw() {
     timer += deltaTime;
     findButton.hide();
     input.hide();
+    countrySelect.hide();
   } else if (gameState === "gameover") {
     showGameOverMenu();
   } else if (gameState === "paused") {
@@ -426,6 +427,7 @@ function showPauseMenu() {
 
   findButton.hide();
   input.hide();
+  countrySelect.hide();
 }
 
 function showChallengeSetup() {
@@ -520,6 +522,7 @@ function showGameOverMenu() {
 
   findButton.hide();
   input.hide();
+  countrySelect.hide();
 }
 
 function drawMenuButton(label, x, y, col) {
@@ -565,15 +568,17 @@ function startGame() {
   countrySelect.option("Previous Guesses (0)");
   countrySelect.elt.options[0].disabled = true;
 
-  targetCountry = normalize(random(countries.features).properties.name);
+  const filtered = countries.features.filter(
+    (c) => c.properties.name !== "Antarctica"
+  );
+
+  targetCountry = normalize(random(filtered).properties.name);
   console.log("Mystery Country:", targetCountry);
 
   gameState = "playing";
   recenterView();
 
-  homeMusic.stop();
-  endMusic.stop();
-
+  stopAllMusic();
   playRandomGameMusic();
 }
 
@@ -620,14 +625,13 @@ function updateGuessDropdown() {
 
 function playRandomGameMusic() {
   let songNum = floor(random(0, 6));
+  if (gameMusic && gameMusic.isPlaying()) gameMusic.stop();
 
   gameMusic = loadSound("assets/gamemusic" + songNum + ".mp3", () => {
     gameMusic.setLoop(false);
-
     gameMusic.onended(() => {
-      playRandomGameMusic();
+      if (gameState === "playing") playRandomGameMusic();
     });
-
     gameMusic.play();
   });
 }
@@ -659,10 +663,10 @@ function handleGuess() {
   }
 
   if (guess === targetCountry) {
-    setTimeout(() => {
-      homeMusic.stop();
-      gameMusic.stop();
+    if (gameMusic && gameMusic.isPlaying()) gameMusic.stop();
 
+    setTimeout(() => {
+      stopAllMusic();
       endMusic.setLoop(true);
       endMusic.play();
     }, 3000);
@@ -844,6 +848,12 @@ function formatTime(ms) {
   return minutes + ":" + nf(seconds, 2);
 }
 
+function stopAllMusic() {
+  if (homeMusic && homeMusic.isPlaying()) homeMusic.stop();
+  if (gameMusic && gameMusic.isPlaying()) gameMusic.stop();
+  if (endMusic && endMusic.isPlaying()) endMusic.stop();
+}
+
 function mousePressed() {
   userStartAudio();
   if (!homeMusic.isPlaying() && gameState === "start") {
@@ -868,9 +878,7 @@ function mousePressed() {
       startGame();
       buttonClickSound.play();
 
-      homeMusic.stop();
-      endMusic.stop();
-
+      stopAllMusic();
       gameMusic.setLoop(true);
       gameMusic.play();
       return;
