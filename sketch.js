@@ -4,7 +4,6 @@ let input;
 let baseMap;
 let font;
 let pauseButton;
-let findButton;
 let timer = 0;
 
 let selectedCountry = "";
@@ -82,10 +81,6 @@ function setup() {
   suggestionsDiv.style("max-height", "150px");
   suggestionsDiv.style("overflow-y", "auto");
 
-  findButton = createButton("Find");
-  findButton.position(input.x + input.width + 10, 10);
-  findButton.mousePressed(handleGuess);
-
   pauseButton = createButton("❚❚");
   pauseButton.position(20, 10);
   pauseButton.mousePressed(() => {
@@ -149,7 +144,6 @@ function draw() {
       calculateScore();
     }
     timer += deltaTime;
-    findButton.hide();
     input.hide();
     countrySelect.hide();
   } else if (gameState === "gameover") {
@@ -175,13 +169,11 @@ function draw() {
     } else {
       timer += deltaTime;
     }
-    findButton.show();
     input.show();
     pauseButton.show();
     countrySelect.show();
   } else if (gameState === "challenge") {
     showChallengeSetup();
-    findButton.hide();
     input.hide();
     pauseButton.hide();
     countrySelect.hide();
@@ -406,7 +398,6 @@ function showStartMenu() {
   drawPlayButton(width / 2, height / 2 + 90);
   drawChallengeButton(width / 2, height / 2 + 160);
 
-  findButton.hide();
   input.hide();
   pauseButton.hide();
   countrySelect.hide();
@@ -425,7 +416,6 @@ function showPauseMenu() {
   textSize(32);
   text("PAUSED", width / 2, height / 2);
 
-  findButton.hide();
   input.hide();
   countrySelect.hide();
 }
@@ -520,7 +510,6 @@ function showGameOverMenu() {
     drawMenuButton("LEARN", width / 2, height / 2 + 60, color(70, 160, 220));
   }
 
-  findButton.hide();
   input.hide();
   countrySelect.hide();
 }
@@ -590,6 +579,9 @@ function calculateScore() {
   let timeBonus = max(0, floor(map(seconds, 30, 300, 500, 0)));
 
   let totalScore = guessScore + timeBonus;
+
+  if (feedback === "Time's up!" || feedback === "Out of guesses!")
+    totalScore = 0;
 
   scoreFeedback = ` ${totalScore} pts  |  ${numGuesses} guesses  |  ${formatTime(
     timer
@@ -854,115 +846,84 @@ function stopAllMusic() {
   if (endMusic && endMusic.isPlaying()) endMusic.stop();
 }
 
+function isClicked(cx, cy, w, h) {
+  return (
+    mouseX > cx - w / 2 &&
+    mouseX < cx + w / 2 &&
+    mouseY > cy - h / 2 &&
+    mouseY < cy + h / 2
+  );
+}
+
 function mousePressed() {
   userStartAudio();
   if (!homeMusic.isPlaying() && gameState === "start") {
     homeMusic.play();
   }
+  let bx = width / 2;
+
+  // START / GAMEOVER SCREEN
   if (gameState === "start" || gameState === "gameover") {
+    // play button
     let playY =
       gameState === "start"
         ? height / 2 + 90
         : showingLearn
-        ? height / 2 + 270
+        ? height / 2 + 180
         : height / 2 + 120;
-    let bx = width / 2;
 
-    if (
-      mouseX > bx - 60 &&
-      mouseX < bx + 60 &&
-      mouseY > playY - 25 &&
-      mouseY < playY + 25
-    ) {
+    if (isClicked(bx, playY, 150, 50)) {
       showingLearn = false;
       startGame();
       buttonClickSound.play();
-
-      stopAllMusic();
-      gameMusic.setLoop(true);
-      gameMusic.play();
       return;
     }
 
-    let challengeY = height / 2 + 160;
-
-    if (
-      mouseX > bx - 75 &&
-      mouseX < bx + 75 &&
-      mouseY > challengeY - 25 &&
-      mouseY < challengeY + 25
-    ) {
-      console.log("CHALLENGE pressed");
-
+    // Challenge button (start screen)
+    if (gameState === "start" && isClicked(bx, height / 2 + 160, 150, 50)) {
       gameState = "challenge";
       buttonClickSound.play();
-
       return;
     }
 
+    // Learn button (gameover)
     if (gameState === "gameover" && !showingLearn) {
-      let ly = height / 2 + 40;
-      if (
-        mouseX > bx - 60 &&
-        mouseX < bx + 60 &&
-        mouseY > ly - 25 &&
-        mouseY < ly + 25
-      ) {
+      if (isClicked(bx, height / 2 + 60, 150, 50)) {
         showingLearn = true;
         buttonClickSound.play();
-
         return;
       }
     }
 
-    if (gameState === "gameover" && showingLearn) {
-      let by2 = height / 2 + 200;
-      if (
-        mouseX > bx - 60 &&
-        mouseX < bx + 60 &&
-        mouseY > by2 - 25 &&
-        mouseY < by2 + 25
-      ) {
-        showingLearn = false;
-        startGame();
-        buttonClickSound.play();
-        return;
-      }
-    }
+    return;
   }
-  if (gameState === "challenge") {
-    let bx = width / 2;
 
+  // CHALLENGE SCREEN
+  if (gameState === "challenge") {
+    // Guess limit controls
     if (mouseY > height / 2 - 125 && mouseY < height / 2 - 75) {
       if (mouseX > bx - 220 && mouseX < bx - 100) {
         guessLimit = max(1, guessLimit - 1);
-        buttonClickSound.play();
-        return;
       } else if (mouseX > bx + 100 && mouseX < bx + 220) {
         guessLimit = min(20, guessLimit + 1);
-        buttonClickSound.play();
-        return;
       }
+      buttonClickSound.play();
+      return;
     }
 
+    // Time limit controls
     if (mouseY > height / 2 - 45 && mouseY < height / 2 + 5) {
       if (mouseX > bx - 220 && mouseX < bx - 100) {
         timeLimit = max(10, timeLimit - 10);
-        buttonClickSound.play();
-        return;
       } else if (mouseX > bx + 100 && mouseX < bx + 220) {
         timeLimit = min(300, timeLimit + 10);
-        buttonClickSound.play();
-        return;
       }
+      buttonClickSound.play();
+      return;
     }
 
-    if (
-      mouseX > bx - 75 &&
-      mouseX < bx + 75 &&
-      mouseY > height / 2 + 95 &&
-      mouseY < height / 2 + 145
-    ) {
+    // Start challenge
+    if (isClicked(bx, height / 2 + 120, 150, 50)) {
       challengeMode = true;
       timer = timeLimit * 1000;
       startGame();
@@ -970,12 +931,8 @@ function mousePressed() {
       return;
     }
 
-    if (
-      mouseX > bx - 60 &&
-      mouseX < bx + 60 &&
-      mouseY > height / 2 + 155 &&
-      mouseY < height / 2 + 205
-    ) {
+    // Back button
+    if (isClicked(bx, height / 2 + 180, 120, 50)) {
       gameState = "start";
       challengeMode = false;
       buttonClickSound.play();
@@ -985,6 +942,7 @@ function mousePressed() {
     return;
   }
 
+  // drag
   isDragging = true;
   lastMouseX = mouseX;
   lastMouseY = mouseY;
