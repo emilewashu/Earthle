@@ -1,9 +1,10 @@
-// ================== GLOBAL STATE ==================
+// ================== GLOBAL VARS ==================
 let countries;
 let input;
 let baseMap;
 let font;
 let pauseButton;
+let hintButton;
 let timer = 0;
 
 let selectedCountry = "";
@@ -105,6 +106,20 @@ function setup() {
   countrySelect.style("max-width", "220px");
   countrySelect.style("border-radius", "5px");
 
+  hintButton = createButton("HINT");
+  hintButton.position(width - 270, height - 60);
+  hintButton.mousePressed(() => {
+    if (gameState === "playing") {
+      feedback =
+        "The country starts with '" +
+        targetCountry.charAt(0).toUpperCase() +
+        "'";
+      buttonClickSound.play();
+    }
+  });
+  hintButton.style("background-color", "grey");
+  hintButton.style("color", "white");
+
   gameState = "start";
   countryList = countries.features.map((f) => f.properties.name).sort();
 
@@ -146,6 +161,7 @@ function draw() {
     timer += deltaTime;
     input.hide();
     countrySelect.hide();
+    hintButton.hide();
   } else if (gameState === "gameover") {
     showGameOverMenu();
   } else if (gameState === "paused") {
@@ -172,11 +188,13 @@ function draw() {
     input.show();
     pauseButton.show();
     countrySelect.show();
+    hintButton.show();
   } else if (gameState === "challenge") {
     showChallengeSetup();
     input.hide();
     pauseButton.hide();
     countrySelect.hide();
+    hintButton.hide();
   }
 
   if (gameState !== "start") {
@@ -284,7 +302,7 @@ function drawLegend() {
   }
 
   textSize(22);
-  text("Press r to reset view", startX + 190, startY - totalHeight + 240);
+  text("Press R to reset view", startX + 190, startY - totalHeight + 240);
 }
 
 function drawCompass() {
@@ -401,6 +419,7 @@ function showStartMenu() {
   input.hide();
   pauseButton.hide();
   countrySelect.hide();
+  hintButton.hide();
 }
 
 function showPauseMenu() {
@@ -418,6 +437,7 @@ function showPauseMenu() {
 
   input.hide();
   countrySelect.hide();
+  hintButton.hide();
 }
 
 function showChallengeSetup() {
@@ -512,6 +532,7 @@ function showGameOverMenu() {
 
   input.hide();
   countrySelect.hide();
+  hintButton.hide();
 }
 
 function drawMenuButton(label, x, y, col) {
